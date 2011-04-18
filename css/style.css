@@ -86,6 +86,48 @@ a:hover { color: #036; }
     \\ ========================================== //
 */
 
+header {
+  background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0,#81A8CE),color-stop(1,#5E87B0));
+  height: 45px;
+  width: 100%;
+  font-family: Helvetica;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+  font-size: 32px;
+  text-shadow: rgba(0,0,0,0.4) 0px -1px 1px;
+}
+
+ul {
+  padding: 0;
+  margin: 0;
+}
+
+ul > li {
+  display: block;
+  position: relative;
+  background-color: #EEE;
+  left: 0;
+  right: 0;
+  height: 60jpx;
+  background-image:-webkit-gradient(linear,left top,left bottom, color-stop(0, #FDFDFD), color-stop(1, #EEE)) ;
+  border-top: 1px solid #ccc;
+  padding-left: 10px;
+  line-height: 62px;
+  font-size: 32px;
+}
+
+.is-active {
+  border: 1px solid red;
+}
+
+#wrapper {
+	position:absolute; z-index:1;
+	top:45px; bottom:0px; left:0;
+	width:100%;
+	background:#aaa;
+	overflow:auto;
+}
 
 
 

@@ -22,12 +22,19 @@
       Muni Arrival Times
 		</header>
 
-		<div id="main" role="main">
-      <script type="text/x-sc-template" data-sc-template="loading">
-        {{#collection Muni.routesView contentBinding="Muni.routesController"}}
+    <script type="text/x-sc-template" data-sc-template="loading">
+      <div id="wrapper">
+        {{#collection Muni.RoutesView contentBinding="Muni.routesController"}}
           {{content.title}}
         {{/collection}}
-      </script>
+      </div>
+    </script>
+
+    <script type="text/x-sc-template" data-sc-template="route-item">
+      {{content.title}}
+    </script>
+		<div id="main" role="main">
+
 		</div>
 
 		<footer>
@@ -38,5 +45,6 @@
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 	<script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.1.min.js"%3E%3C/script%3E'))</script>
   <script src="js/amber.js"></script>
+  <script src="js/iscroll-min.js"></script>
 	<script src="js/muni.js"></script></body>
 </html>
