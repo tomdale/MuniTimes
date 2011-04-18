@@ -1,11 +1,7 @@
 (function() {
   var Muni;
   window.Muni = Muni = SC.Object.create({
-    routesController: SC.ArrayController.create({
-      contentDidChange: (function() {
-        return console.log('content changed');
-      }).observes('content')
-    }),
+    routesController: SC.ArrayController.create(),
     routesView: SC.TemplateCollectionView.extend({
       contentBinding: 'Muni.routesController'
     })
