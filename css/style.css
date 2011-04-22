@@ -101,6 +101,7 @@ header {
 ul {
   padding: 0;
   margin: 0;
+	position: relative;
 }
 
 ul > li {
@@ -117,8 +118,8 @@ ul > li {
   font-size: 32px;
 }
 
-.is-active {
-  border: 1px solid red;
+ul > li.active {
+  background-image:-webkit-gradient(linear,left top,left bottom, color-stop(1, #FDFDFD), color-stop(0, #EEE)) ;
 }
 
 #wrapper {
@@ -127,9 +128,11 @@ ul > li {
 	width:100%;
 	background:#aaa;
 	overflow:auto;
+	-webkit-transition: left 300ms ease-out;
 }
 
-
+#wrapper > ul {
+}
 
 
 

@@ -2,21 +2,34 @@
 window.Muni = Muni = SC.Object.create
 
   Route: SC.Object.extend
-    tag: null,
+    tag: null
+    title: null
+
+  Direction: SC.Object.extend
+    title: null
+    name: null
+    useForUI: false
+    stops: []
+
+  Stop: SC.Object.extend
+    tag: null
     title: null
 
   API: SC.Object.create
     loadRoutes: ->
       # Fetch the XML feed of currently available routes for Muni
-      response = jQuery.ajax "/_strobe/proxy/webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=sf-muni"
+      jQuery.ajax "/_strobe/proxy/webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=sf-muni"
         success: (response) ->
           routes = Muni.API._convertRoutesXMLToObjects(response)
-          Muni.routesController.set 'content', routes
+          Muni.routesController.set('content', routes)
 
-    loadStopsForRoute: (route) ->
+    loadDirectionsForRoute: (route, target, action) ->
       tag = route.get('tag')
-      jQuery.ajax "/_strobe/proxy/webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=sf-muni&r=#{tag}"
-
+      jQuery.ajax "/_strobe/proxy/webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=sf-muni&r=#{tag}",
+        success: (response) ->
+          directions = Muni.API._convertDirectionsXMLToObjects(response)
+          Muni.directionsController.set('content', directions)
+          Muni.viewController.transitionToDirections()
 
     _convertRoutesXMLToObjects: (xml) ->
       # Get a jQuery object for the parsed XML
@@ -26,13 +39,30 @@ window.Muni = Muni = SC.Object.create
 
       body.each ->
         route = $(this)
-        routes.push Muni.Route.create
-          tag:   route.attr('tag')
+        tag = route.attr('tag')
+
+        routes.pushObject Muni.Route.create
+          tag:   tag
           title: route.attr('title')
 
       routes
 
+    _convertDirectionsXMLToObjects: (xml) ->
 
+      body = $(xml).find 'body > route > direction'
+      directions = [];
+
+      body.each ->
+        direction = $(this)
+        tag = direction.attr('tag')
+
+        directions.push Muni.Direction.create
+          tag:      tag
+          title:    direction.get('title')
+          name:     direction.get('name')
+          useForUI: !!direction.get('useForUI')
+
+      directions
 
   # Define an array controller that manages the available Muni routes
   routesController: SC.ArrayController.create
@@ -40,11 +70,29 @@ window.Muni = Muni = SC.Object.create
       window.scrollView.refresh()
     ).observes 'content', 'content.[]'
 
+  directionsController: SC.ArrayController.create()
+
+  viewController: SC.Object.create
+    transitionToDirections: ->
+      view = SC.TemplateView.create({
+      });
+
+      view.css('left', -viewWidth)
+
+  navigationView: SC.NavigationView.create()
+
   RoutesView: SC.TemplateCollectionView.extend
     itemViewClass: SC.TemplateView.extend
       templateName: 'route-item'
       tagName: 'li'
+      mouseDown: ->
+        this.$().addClass('active')
 
+      mouseUp: ->
+        route = this.get('content')
+        Muni.API.loadDirectionsForRoute(route)
+
+        this.$().removeClass('active')
 
 
 
