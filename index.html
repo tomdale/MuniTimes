@@ -18,32 +18,43 @@
         Muni Arrival Times
       </header>
 
-      <script type="text/x-sc-template" data-sc-template="routes-list">
-        {{#view Muni.navigationView}}
-          <div class="scroll">
-            {{#collection Muni.RouteListView contentBinding="Muni.routesController"}}
-              {{content.title}}
-            {{/collection}}
-          </div>
-        {{/view}}
+      <script type="text/html" data-template-name="route-list">
+        {{#collection Muni.RouteListView}}
+          {{content.title}}
+        {{else}}
+          Loading…
+        {{/collection}}
       </script>
 
-      <script type="text/x-sc-template" data-sc-template="directions-list">
-        <div class="scroll">
-          {{#collection Muni.DirectionsListView contentBinding="Muni.directionsController"}}
-            {{content.title}}
-          {{/collection}}
-        </div>
+      <script type="text/html" data-template-name="direction-list">
+        {{#collection Muni.DirectionListView}}
+          {{content.title}}
+        {{else}}
+          Loading…
+        {{/collection}}
       </script>
 
-      <div id="main" role="main"> </div>
+      <script type="text/html" data-template-name="stop-list">
+        {{#collection Muni.StopListView}}
+          {{content.title}}
+        {{else}}
+          Loading…
+        {{/collection}}
+      </script>
+
+      <script type="text/html" data-template-name="prediction-list">
+        {{#collection Muni.PredictionListView}}
+          {{content.minutes}} minutes
+        {{else}}
+          Loading…
+        {{/collection}}
+      </script>
     </div>
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script>!window.jQuery && document.write(unescape('%3Cscript src="js/libs/jquery-1.5.1.min.js"%3E%3C/script%3E'))</script>
-    <script src="js/amber.js"></script>
-    <script src="js/iscroll-min.js"></script>
-    <script src="js/navigation_controller.js"></script>
+    <script src="js/libs/sproutcore.js"></script>
+    <script src="js/api.js"></script>
     <script src="js/muni.js"></script>
   </body>
 </html>

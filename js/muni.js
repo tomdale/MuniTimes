@@ -1,60 +1,147 @@
-(function() {
+(function(exports) {
   var Muni;
-  window.Muni = Muni = SC.Object.create({
-    Route: SC.Object.extend({
-      tag: null,
-      title: null
-    }),
-    API: SC.Object.create({
-      loadRoutes: function() {
-        var response;
-        return response = jQuery.ajax("/_strobe/proxy/webservices.nextbus.com/service/publicXMLFeed?command=routeList&a=sf-muni", {
-          success: function(response) {
-            var routes;
-            routes = Muni.API._convertRoutesXMLToObjects(response);
-            return Muni.routesController.set('content', routes);
-          }
-        });
+  var MuniAPI = exports.MuniAPI;
+
+  var routeListView, directionListView, stopListView, predictionListView;
+
+  var ListItemView = SC.View.extend({
+    touchStart: function() {
+      this.first = false;
+      this.$().addClass('active');
+    },
+
+    touchMove: function(evt) {
+      this.$().removeClass('active');
+      this._canceled = true;
+    },
+
+    touchEnd: function(evt) {
+      if (!this._canceled) {
+        if (this.click) { this.click(evt); }
+      }
+      this._canceled = false;
+      this.$().removeClass('active');
+    }
+  });
+
+  Muni = SC.Application.create({
+    routesController: SC.ArrayProxy.create({
+      content: null,
+
+      routesLoaded: function(routes) {
+        this.set('content', routes);
       },
-      loadStopsForRoute: function(route) {
-        var tag;
-        tag = route.get('tag');
-        return jQuery.ajax("/_strobe/proxy/webservices.nextbus.com/service/publicXMLFeed?command=routeConfig&a=sf-muni&r=" + tag);
-      },
-      _convertRoutesXMLToObjects: function(xml) {
-        var body, routes;
-        body = $(xml).find('body > route');
-        routes = [];
-        body.each(function() {
-          var route;
-          route = $(this);
-          return routes.push(Muni.Route.create({
-            tag: route.attr('tag'),
-            title: route.attr('title')
-          }));
-        });
-        return routes;
+
+      routeClicked: function(route) {
+        var tag = route.get('tag');
+
+        routeListView.remove();
+        directionListView.append();
+
+        MuniAPI.loadDirections(tag, Muni.directionsController, 'directionsLoaded');
       }
     }),
-    routesController: SC.ArrayController.create({
-      contentDidChange: (function() {
-        return window.scrollView.refresh();
-      }).observes('content', 'content.[]')
+
+    directionsController: SC.ArrayProxy.create({
+      directionsLoaded: function(directions) {
+        this.set('content', directions);
+      },
+
+      directionClicked: function(direction) {
+
+        directionListView.remove();
+        stopListView.append();
+
+        Muni.stopsController.stopsLoaded(direction.get('stops'));
+      }
     }),
-    RoutesView: SC.TemplateCollectionView.extend({
-      itemViewClass: SC.TemplateView.extend({
-        templateName: 'route-item',
-        tagName: 'li'
+
+    stopsController: SC.ArrayProxy.create({
+      stopsLoaded: function(stops) {
+        this.set('content', stops);
+      },
+
+      stopClicked: function(stop) {
+        var direction = stop.get('direction'),
+            route     = direction.get('route');
+
+        stop = stop.get('tag');
+
+        MuniAPI.loadPredictions(route, direction.get('tag'), stop, Muni.predictionsController, 'predictionsLoaded');
+
+        stopListView.remove();
+        predictionListView.append();
+      }
+    }),
+
+    predictionsController: SC.ArrayProxy.create({
+      predictionsLoaded: function(predictions) {
+        this.set('content', predictions);
+      }
+    }),
+
+    RouteListView: SC.CollectionView.extend({
+      contentBinding: 'Muni.routesController',
+      tagName: 'ul',
+      itemViewClass: ListItemView.extend({
+        click: function() {
+          Muni.routesController.routeClicked(this.get('content'));
+        }
+      })
+    }),
+
+    DirectionListView: SC.CollectionView.extend({
+      contentBinding: 'Muni.directionsController',
+      tagName: 'ul',
+      itemViewClass: ListItemView.extend({
+        click: function() {
+          Muni.directionsController.directionClicked(this.get('content'));
+        }
+      })
+    }),
+
+    StopListView: SC.CollectionView.extend({
+      contentBinding: 'Muni.stopsController',
+      tagName: 'ul',
+      itemViewClass: ListItemView.extend({
+        click: function() {
+          Muni.stopsController.stopClicked(this.get('content'));
+        }
+      })
+    }),
+
+    PredictionListView: SC.CollectionView.extend({
+      contentBinding: 'Muni.predictionsController',
+      tagName: 'ul',
+      itemViewClass: ListItemView.extend({
+        // click: function() {
+        //   Muni.stopsController.stopClicked(this.get('content'));
+        // }
       })
     })
   });
-  SC.ready(function() {
-    var view;
-    Muni.API.loadRoutes();
-    view = SC.TemplateView.create({
-      templateName: 'loading'
+
+  jQuery(function() {
+    routeListView = SC.View.create({
+      templateName: 'route-list'
     });
-    view.append();
-    return window.scrollView = new iScroll('wrapper');
+
+    routeListView.append();
+
+    directionListView = SC.View.create({
+      templateName: 'direction-list'
+    });
+
+    stopListView = SC.View.create({
+      templateName: 'stop-list'
+    });
+
+    predictionListView = SC.View.create({
+      templateName: 'prediction-list'
+    });
+
+    MuniAPI.loadRoutes(Muni.routesController, 'routesLoaded');
   });
-}).call(this);
+
+  exports.Muni = Muni;
+})(this);
